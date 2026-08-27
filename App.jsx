@@ -1,130 +1,101 @@
-import React, { useState, useEffect } from 'react';
-import { createClient } from '@supabase/supabase-js';
+// Código Otimizado em JavaScript Puro para o Vercel
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
-// Chaves oficiais configuradas do seu projeto no Supabase
 const SUPABASE_URL = 'https://ctaxovpcqnoymoxrahmf.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_oYw58rhxktCrQEPVRgss8A__iJoBhis';
-
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-export default function EscalaMedicaApp() {
-  const [dataSelecionada, setDataSelecionada] = useState('2026-09-01');
-  const [plantoes, setPlantoes] = useState([]);
-  const [carregando, setCarregando] = useState(true);
-
-  // Busca os plantões do dia selecionado no Supabase
-  useEffect(() => {
-    async function buscarPlantoes() {
-      setCarregando(true);
-      const { data, error } = await supabase
-        .from('plantoes')
-        .select('*')
-        .eq('data', dataSelecionada);
-
-      if (error) {
-        console.error('Erro ao buscar plantões:', error);
-      } else {
-        setPlantoes(data || []);
-      }
-      setCarregando(false);
-    }
-
-    buscarPlantoes();
-  }, [dataSelecionada]);
-
-  // Função para gerar iniciais do nome (ex: "BRUNA VICENTE" -> "BV")
-  const getIniciais = (nome) => {
-    if (!nome) return 'MD';
-    const partes = nome.trim().split(' ');
-    if (partes.length > 1) {
-      return (partes[0][0] + partes[partes.length - 1][0]).toUpperCase();
-    }
-    return nome.substring(0, 2).toUpperCase();
-  };
-
-  return (
-    <div style={styles.container}>
-      {/* Cabeçalho */}
-      <header style={styles.header}>
-        <h2 style={styles.headerTitle}>Setembro 2026</h2>
-        <span style={styles.hospitalTag}>Hospital Amparo</span>
+export default async function iniciarApp() {
+  const root = document.getElementById('root');
+  root.innerHTML = `
+    <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; background: #f8f9fa; min-height: 100vh; padding-bottom: 70px;">
+      <header style="background: #00264d; color: #fff; padding: 16px; text-align: center;">
+        <h2 style="margin: 0; font-size: 18px;">Setembro 2026</h2>
+        <span style="font-size: 12px; color: #a0c4ff;">Hospital Amparo</span>
       </header>
 
-      {/* Seletor de Dias de Setembro */}
-      <div style={styles.dateSelector}>
-        <p style={{fontSize: '14px', margin: '0 0 8px 0', color: '#555'}}>Selecione o dia para ver a escala:</p>
-        <div style={styles.dateButtons}>
-          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15].map((dia) => {
-            const realDiaStr = dia < 10 ? `2026-09-0${dia}` : `2026-09-${dia}`;
-            return (
-              <button 
-                key={dia} 
-                onClick={() => setDataSelecionada(realDiaStr)}
-                style={{
-                  ...styles.dayButton, 
-                  backgroundColor: dataSelecionada === realDiaStr ? '#003366' : '#f0f0f0',
-                  color: dataSelecionada === realDiaStr ? '#fff' : '#333'
-                }}
-              >
-                {dia}
-              </button>
-            );
-          })}
-        </div>
+      <div style="padding: 16px; background: #fff; border-bottom: 1px solid #ddd;">
+        <p style="font-size: 14px; margin: 0 0 8px 0; color: #555;">Selecione o dia para ver a escala:</p>
+        <div id="botoes-dias" style="display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px;"></div>
       </div>
 
-      {/* Lista de Plantões */}
-      <main style={styles.main}>
-        <h3 style={styles.sectionTitle}>Plantões do dia {dataSelecionada.split('-').reverse().join('/')} ({plantoes.length})</h3>
-        
-        {carregando ? (
-          <p style={{textAlign: 'center', color: '#777'}}>Carregando plantões...</p>
-        ) : plantoes.length === 0 ? (
-          <p style={{textAlign: 'center', color: '#777'}}>Nenhum plantão cadastrado para este dia.</p>
-        ) : (
-          plantoes.map((item, index) => (
-            <div key={index} style={styles.card}>
-              <div style={styles.avatar}>{getIniciais(item.medico)}</div>
-              <div style={styles.info}>
-                <h4 style={styles.medicoNome}>{item.medico}</h4>
-                <p style={styles.localText}>HEJ - PS - PRONTO ATENDIMENTO</p>
-              </div>
-              <div style={styles.horarioBox}>
-                <span style={styles.horarioText}>{item.turno.replace('-', ' às ')}H</span>
-              </div>
-            </div>
-          ))
-        )}
+      <main style="padding: 16px;">
+        <h3 id="titulo-dia" style="font-size: 15px; color: #333; marginBottom: 12px;">Carregando plantões...</h3>
+        <div id="lista-plantoes"></div>
       </main>
 
-      {/* Menu Inferior Estilizado */}
-      <nav style={styles.bottomNav}>
-        <button style={styles.navButton}>Menu</button>
-        <button style={{...styles.navButton, color: '#003366', fontWeight: 'bold'}}>Escalas</button>
-        <button style={styles.navButton}>Trocas</button>
-        <button style={styles.navButton}>Anúncios</button>
+      <nav style="position: fixed; bottom: 0; left: 0; right: 0; max-width: 480px; margin: 0 auto; background: #fff; display: flex; justify-content: space-around; border-top: 1px solid #ddd; padding: 10px 0;">
+        <button style="background:none; border:none; font-size:12px; color:#666; cursor:pointer;">Menu</button>
+        <button style="background:none; border:none; font-size:12px; color:#003366; font-weight:bold; cursor:pointer;">Escalas</button>
+        <button style="background:none; border:none; font-size:12px; color:#666; cursor:pointer;">Trocas</button>
+        <button style="background:none; border:none; font-size:12px; color:#666; cursor:pointer;">Anúncios</button>
       </nav>
     </div>
-  );
+  `;
+
+  async function carregarPlantoes(dataIso) {
+    const titulo = document.getElementById('titulo-dia');
+    const lista = document.getElementById('lista-plantoes');
+    
+    const partesData = dataIso.split('-').reverse().join('/');
+    titulo.innerText = `Plantões do dia ${partesData}`;
+    lista.innerHTML = `<p style="text-align: center; color: #777;">Buscando dados...</p>`;
+
+    const { data, error } = await supabase
+      .from('plantoes')
+      .select('*')
+      .eq('data', dataIso);
+
+    if (error) {
+      lista.innerHTML = `<p style="text-align: center; color: red;">Erro ao carregar plantões.</p>`;
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      lista.innerHTML = `<p style="text-align: center; color: #777;">Nenhum plantão cadastrado para este dia.</p>`;
+      return;
+    }
+
+    lista.innerHTML = data.map(item => {
+      const iniciais = item.medico.split(' ').map(n => n[0]).join('').substring(0, 2);
+      const horarioFormatado = item.turno.replace('-', ' às ') + 'H';
+      
+      return `
+        <div style="display: flex; align-items: center; background: #fff; padding: 12px; border-radius: 8px; margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+          <div style="width: 40px; height: 40px; border-radius: 50%; background: #e2d9f3; color: #5b32a7; display: flex; align-items: center; justifyContent: center; font-weight: bold; margin-right: 12px; flex-shrink: 0;">${iniciais}</div>
+          <div style="flex: 1;">
+            <h4 style="margin: 0 0 4px 0; font-size: 15px; color: #222;">${item.medico}</h4>
+            <p style="margin: 0; font-size: 11px; color: #666;">HEJ - PS - PRONTO ATENDIMENTO</p>
+          </div>
+          <div style="text-align: right; font-size: 13px; font-weight: bold; color: #00264d;">${horarioFormatado}</div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  const containerBotoes = document.getElementById('botoes-dias');
+  for (let i = 1; i <= 15; i++) {
+    const diaStr = i < 10 ? `0${i}` : `${i}`;
+    const dataIso = `2026-09-${diaStr}`;
+    
+    const btn = document.createElement('button');
+    btn.innerText = i;
+    btn.style.cssText = `border: none; borderRadius: 4px; padding: 8px 12px; cursor: pointer; fontWeight: bold; fontSize: 14px; background: ${i === 1 ? '#003366' : '#f0f0f0'}; color: ${i === 1 ? '#fff' : '#333'};`;
+    
+    btn.onclick = () => {
+      document.querySelectorAll('#botoes-dias button').forEach(b => {
+        b.style.background = '#f0f0f0';
+        b.style.color = '#333';
+      });
+      btn.style.background = '#003366';
+      btn.style.color = '#fff';
+      carregarPlantoes(dataIso);
+    };
+    
+    containerBotoes.appendChild(btn);
+  }
+
+  carregarPlantoes('2026-09-01');
 }
 
-// Estilos visuais
-const styles = {
-  container: { fontFamily: 'sans-serif', maxWidth: '480px', margin: '0 auto', backgroundColor: '#f8f9fa', minHeight: '100vh', paddingBottom: '70px', boxSizing: 'border-box' },
-  header: { backgroundColor: '#00264d', color: '#fff', padding: '16px', textAlign: 'center' },
-  headerTitle: { margin: 0, fontSize: '18px' },
-  hospitalTag: { fontSize: '12px', color: '#a0c4ff' },
-  dateSelector: { padding: '16px', backgroundColor: '#fff', borderBottom: '1px solid #ddd' },
-  dateButtons: { display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '4px' },
-  dayButton: { border: 'none', borderRadius: '4px', padding: '8px 12px', cursor: 'pointer', fontWeight: 'bold', fontSize: '14px' },
-  main: { padding: '16px' },
-  sectionTitle: { fontSize: '15px', color: '#333', marginBottom: '12px' },
-  card: { display: 'flex', alignItems: 'center', backgroundColor: '#fff', padding: '12px', borderRadius: '8px', marginBottom: '10px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' },
-  avatar: { width: '40px', height: '40px', borderRadius: '50%', backgroundColor: '#e2d9f3', color: '#5b32a7', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', marginRight: '12px', flexShrink: 0 },
-  info: { flex: 1 },
-  medicoNome: { margin: '0 0 4px 0', fontSize: '15px', color: '#222' },
-  localText: { margin: 0, fontSize: '11px', color: '#666' },
-  horarioBox: { textAlign: 'right', fontSize: '13px', fontWeight: 'bold', color: '#00264d' },
-  bottomNav: { position: 'fixed', bottom: 0, left: 0, right: 0, maxWidth: '480px', margin: '0 auto', backgroundColor: '#fff', display: 'flex', justifyContent: 'space-around', borderTop: '1px solid #ddd', padding: '10px 0' },
-  navButton: { background: 'none', border: 'none', fontSize: '12px', color: '#666', cursor: 'pointer' }
-};
+iniciarApp();
